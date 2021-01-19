@@ -1,0 +1,32 @@
+export interface TeamUser {
+  agencia: string;
+  altura: string;
+  apelido: string;
+  banco: string;
+  cadastro: Date;
+  cep: string;
+  cidade: string;
+  conta: string;
+  contatoEmergencial: string;
+  cpf: string;
+  dataFim: string;
+  dataInicio: string;
+  email: string;
+  endereco: string;
+  escopo: string;
+  estado: string;
+  estadoCivil: string;
+  github: string;
+  modeloPagamento: string;
+  nascimento: string;
+  nome: string;
+  nomeEmergencia: string;
+  orgExp: string;
+  parentesco: string;
+  peso: string;
+  rg: string;
+  shippingDate: string;
+  telefone: string;
+  uid: string;
+  valorCobrado: string;
+}
