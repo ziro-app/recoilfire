@@ -1,3 +1,4 @@
+// TODO -> Decide a standardization to use
 {
   "compilerOptions": {
     "outDir": "./dist",
