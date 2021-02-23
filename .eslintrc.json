@@ -23,7 +23,10 @@
     "sourceType": "module",
     "ecmaFeatures": {
       "jsx": true
-    }
+    },
+    "extraFileExtensions": [
+      ".json"
+    ]
   },
   "rules": {
     "@typescript-eslint/explicit-function-return-type": "off",

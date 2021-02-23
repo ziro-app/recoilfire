@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { RecoilRoot } from 'recoil';
 import { FirebaseAppProvider } from 'reactfire';
 import 'firebase/firestore';
@@ -13,9 +13,11 @@ import Router from './Router';
 //dynamic imports
 const App: React.FC = () => (
   <RecoilRoot>
-    <FirebaseAppProvider firebaseConfig={firebaseConfig}>
-      <Router />
-    </FirebaseAppProvider>
+    <Suspense fallback={<div>Carregando</div>}>
+      <FirebaseAppProvider firebaseConfig={firebaseConfig}>
+        <Router />
+      </FirebaseAppProvider>
+    </Suspense>
   </RecoilRoot>
 );
 

@@ -1,0 +1,29 @@
+export interface SuppliersInfo {
+  agencia: string;
+  bairro: string;
+  cadastro: Date;
+  categoria: string;
+  cep: string;
+  cidade: string;
+  cnpj: string;
+  codBanco?: string;
+  email: string;
+  endereco: string;
+  estado: string;
+  fantasia: string;
+  maxParcelas: string;
+  nome: string;
+  nomeBanco?: string;
+  numConta?: string;
+  razao: string;
+  sellerZoopPlan?: any;
+  sellerZoopPlan2?: any;
+  sobrenome: string;
+  telefone: string;
+  tipoCadastro: string;
+  tipoConta?: string;
+  titular?: string;
+  uid: string;
+  whatsapp?: string;
+  zoopId: string;
+}
