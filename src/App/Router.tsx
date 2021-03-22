@@ -14,28 +14,28 @@ const DisplaySuppliers = lazy(() => import('./components/DisplaySuppliers'));
  * Standard wouter routing.
  * TODO -> Define our router format
  */
-const Routes: React.FC = () => {
-  // Hook used to activate the
-  // use of a global browsing history
-  const { } = useGlobalHistory();
+const Routes = () => {
+  // Hook que inicializa o histórico global da aplicação
+  const { history } = useGlobalHistory();
+  console.log(history);
 
   return (
     <Switch
       defaultPublicOnlyFallback={<NotFoundLib />}
-      defaultPrivateOnlyFallback={<Login />}>
+      defaultPrivateFallback={<Login />}>
 
-      {/* Visible to logged and logged out users */}
-      <Route path='/'>
+      {/* Rotas públicas -> Visíveis para usuários logados e deslogados */}
+      <Route path='/' >
         <Home />
       </Route>
 
-      {/* Way used to 'protect' a private
-        route from unauthorized access without reactfire */}
-      <Route path='/suppliers' privateOnly>
+      {/* Rotas privadas -> Visíveis apenas para usuários logados */}
+      <Route path='/suppliers' private>
         <DisplaySuppliers />
       </Route>
 
-      {/* Visible to logged out users */}
+      {/* Rotas que apenas usuários deslogados podem ver.
+          Ex: Para uso de gestão da conta -> Esqueci minha senha, Reenviar email de confirmação, etc */}
       <Route path='/:rest*' publicOnly>
         <NotFound />
       </Route>

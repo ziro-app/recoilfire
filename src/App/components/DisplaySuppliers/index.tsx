@@ -1,15 +1,17 @@
 import React from 'react';
-import { useUser, useAuth } from 'reactfire';
+import { useAuth } from 'reactfire';
 import useGlobalHistory from '@bit/ziro.utils.history';
+import { useAccountManagement } from '../../hooks/AccountManager';
 import suppliersQuery from './suppliersQuery';
 
-const DisplaySuppliers: React.FC = () => {
+const DisplaySuppliers = () => {
+  // Métodos de gerência de conta disponibilizados pelo hook
+  // const { changeEmail, changePassword, deleteAccount, resendConfirmEmail } = useAccountManagement();
+  // Métodos de navegação disponibilizados pelo hook
+  const { back, pushState } = useGlobalHistory();
   const auth = useAuth();
-  const { data: { displayName, email } } = useUser();
-  // Accessing history and browsing methods
-  const { history, back, pushState } = useGlobalHistory();
   const singOut = () => auth.signOut();
-  console.log({ ...history, displayName, email })
+
   const firestoreData = suppliersQuery();
   const { data: suppliers, status } = firestoreData;
   if (status === 'loading') return <div>Carregando Suppliers...</div>;
@@ -31,6 +33,7 @@ const DisplaySuppliers: React.FC = () => {
         }}>
         <button type="button" onClick={history.length > 1 ? () => back() : () => pushState({ anyState: true }, '', '/')}>Voltar</button>
         <button type="button" onClick={() => pushState({ anyState: true }, '', '/SKAoskaosk?teste=huashua')}>Página Erro</button>
+        {/* <button type="button" onClick={() => resendConfirmEmail({ email: 'wermesonrocha@hotmail.com', type: 'Email' })}>Reenviar email</button> */}
         <button type="button" onClick={singOut}>Deslogar</button>
       </div>
     </>

@@ -8,7 +8,7 @@ import {
   textStyle
 } from './styles';
 
-const NotFound: React.FC = () => {
+const NotFound = () => {
   return (
     <div style={container}>
       <img alt='Test' style={svgStyle} />

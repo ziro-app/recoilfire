@@ -4,7 +4,7 @@ import { Link } from 'wouter';
 import { filterStringValue } from '../../atoms';
 import teamQuery from './teamQuery';
 
-const DisplayTeam: React.FC = () => {
+const DisplayTeam = () => {
   /* subscribe to the filter atom */
   const filter = useRecoilValue(filterStringValue);
   /* subscribe to the team collection */

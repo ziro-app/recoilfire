@@ -11,7 +11,7 @@ import Router from './Router';
 //loading handling (skeleton) (without Suspense)
 //Ziro theme
 //dynamic imports
-const App: React.FC = () => (
+const App = () => (
   <RecoilRoot>
     <Suspense fallback={<div>Carregando</div>}>
       <FirebaseAppProvider firebaseConfig={firebaseConfig}>

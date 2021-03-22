@@ -2,7 +2,7 @@ import React from 'react';
 import { useRecoilState } from 'recoil';
 import { filterBooleanValue } from '../../atoms';
 
-const FilterTeam: React.FC = () => {
+const FilterTeam = () => {
   const [filter, setFilter] = useRecoilState(filterBooleanValue);
   const updateFilter = event => setFilter(event.target.checked);
   return (
