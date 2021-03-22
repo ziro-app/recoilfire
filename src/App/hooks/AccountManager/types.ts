@@ -40,6 +40,13 @@ export namespace Request {
     sheetId?: string;
     sheetRange?: string;
   }
+  export interface ResetPassword {
+    email: string;
+  }
+  export interface LogIn {
+    email: string;
+    password: string;
+  }
 }
 
 export namespace Response {

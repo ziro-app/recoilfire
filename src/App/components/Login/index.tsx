@@ -1,13 +1,19 @@
 import React from "react";
 import { containerWithPadding } from '@ziro/theme';
-import { useAuth } from 'reactfire';
+import { useAccountManagement } from '../../hooks/AccountManager';
 
 const email = 'alessandromarquesgentil@hotmail.com';
 const pass = '123456';
 
 const Login = () => {
-  const auth = useAuth();
-  const signIn = () => auth.signInWithEmailAndPassword(email, pass);
+  const { logIn } = useAccountManagement();
+  const signIn = () => {
+    try {
+      logIn({ email, password: pass });
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   return (
     <div style={containerWithPadding}>

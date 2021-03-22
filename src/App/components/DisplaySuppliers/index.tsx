@@ -1,16 +1,20 @@
 import React from 'react';
-import { useAuth } from 'reactfire';
 import useGlobalHistory from '@bit/ziro.utils.history';
 import { useAccountManagement } from '../../hooks/AccountManager';
 import suppliersQuery from './suppliersQuery';
 
 const DisplaySuppliers = () => {
   // Métodos de gerência de conta disponibilizados pelo hook
-  // const { changeEmail, changePassword, deleteAccount, resendConfirmEmail } = useAccountManagement();
+  const { logOut } = useAccountManagement();
   // Métodos de navegação disponibilizados pelo hook
   const { back, pushState } = useGlobalHistory();
-  const auth = useAuth();
-  const singOut = () => auth.signOut();
+  const singOut = async () => {
+    try {
+      await logOut();
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const firestoreData = suppliersQuery();
   const { data: suppliers, status } = firestoreData;

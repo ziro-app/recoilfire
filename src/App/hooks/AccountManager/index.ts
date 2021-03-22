@@ -1,7 +1,6 @@
 import React, { useCallback } from "react";
-import { useAuth, useFirestore } from "reactfire";
+import { useAuth, useFirestore, auth as fbAuth } from "reactfire";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
-import { fbAuth } from '../../../Firebase/index';
 import { Request, Response } from "./types";
 
 const matchCollectionName = {
@@ -16,6 +15,9 @@ export const useAccountManagement = (): {
   changeEmail: (data: Request.ChangeEmail) => Promise<Response.Default>;
   changePassword: (data: Request.UpdatePassword) => Promise<Response.Default>;
   deleteAccount: (data: Request.DeleteAccount) => Promise<Response.Default>;
+  resetPassword: (data: Request.ResetPassword) => Promise<Response.Default>;
+  logIn: (data: Request.LogIn) => Promise<void>;
+  logOut: () => Promise<void>;
 } => {
   const auth = useAuth();
   const usersRef = useFirestore().collection("users");
@@ -246,5 +248,51 @@ export const useAccountManagement = (): {
     }
   }, []);
 
-  return { resendConfirmEmail, changeEmail, changePassword, deleteAccount };
+  const resetPassword = useCallback(async (data: Request.ResetPassword): Promise<Response.Default> => {
+    try {
+      const { email } = data;
+      const userCollection = usersRef.where("email", "==", email).limit(1).get();
+      const app = (await userCollection).docs[0]?.data()?.app;
+      if (app === "admin") throw new Error("Não permitido para admins!");
+      const collection = matchCollectionName[app] || null;
+      if (!collection) throw new Error("Usuário inválido!");
+      await auth.sendPasswordResetEmail(email);
+      return { ok: true, msg: 'Email enviado com sucesso !' };
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  }, []);
+
+  const logIn = useCallback(async (data: Request.LogIn): Promise<void> => {
+    try {
+      if (auth.currentUser) throw new Error('Usuário deve estar deslogado para acionar o hook!');
+      if (!data.email) throw new Error('Email deve ser fornecido para acionar o hook!');
+      if (!data.password) throw new Error('Senha deve ser fornecida para autenticação!');
+      const { email, password } = data;
+      const { user: { emailVerified } } = await auth.signInWithEmailAndPassword(email.toLowerCase(), password);
+      if (!emailVerified) {
+        await auth.signOut()
+        throw { msg: 'Acesse o email de confirmação', customError: true }
+      }
+    } catch (error) {
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/network-request-failed': throw { msg: 'Sem conexão com a rede', customError: true }
+          case 'auth/invalid-email': throw { msg: 'Email inválido', customError: true }
+          case 'auth/user-disabled': throw { msg: 'Usuário bloqueado', customError: true }
+          case 'auth/user-not-found': throw { msg: 'Usuário não cadastrado', customError: true }
+          case 'auth/wrong-password': throw { msg: 'Senha incorreta', customError: true }
+          case 'auth/too-many-requests': throw { msg: 'Muitas tentativas. Tente mais tarde', customError: true }
+        }
+      } else throw error
+    }
+  }, []);
+
+  const logOut = useCallback(async () => {
+    if (!auth.currentUser) throw new Error('O usuário deve estar logado para usar o hook!');
+    await auth.signOut();
+  }, []);
+
+  return { resendConfirmEmail, changeEmail, changePassword, deleteAccount, resetPassword, logIn, logOut };
 };
