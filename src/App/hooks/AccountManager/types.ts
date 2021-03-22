@@ -23,9 +23,9 @@ export namespace Request {
     sheetId?: string;
     sheetRange?: string;
   }
-  export interface UpdateSheetData {
+  export interface SheetData {
     apiResource: string;
-    apiMethod: "update";
+    apiMethod: string;
     range: string;
     spreadsheetId: string;
     resource: object;
@@ -46,6 +46,16 @@ export namespace Request {
   export interface LogIn {
     email: string;
     password: string;
+  }
+  export interface CreateUser {
+    email: string;
+    password: string;
+    collection: Apps;
+    collectionData: object;
+    continueUrl: string;
+    spreadsheetData?: Array<string>;
+    spreadsheetId?: string;
+    spreadsheetRange?: string;
   }
 }
 

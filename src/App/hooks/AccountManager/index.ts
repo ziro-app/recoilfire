@@ -9,6 +9,7 @@ const matchCollectionName = {
   operation: "team",
   suppliers: "suppliers"
 };
+const collectionList = ["affiliates", "storeowners", "team", "suppliers"];
 
 export const useAccountManagement = (): {
   resendConfirmEmail: (data: Request.ConfirmLink) => Promise<Response.Default>;
@@ -18,6 +19,7 @@ export const useAccountManagement = (): {
   resetPassword: (data: Request.ResetPassword) => Promise<Response.Default>;
   logIn: (data: Request.LogIn) => Promise<void>;
   logOut: () => Promise<void>;
+  createUser: (data: Request.CreateUser) => Promise<Response.Default>;
 } => {
   const auth = useAuth();
   const usersRef = useFirestore().collection("users");
@@ -108,7 +110,7 @@ export const useAccountManagement = (): {
     }
   }, []);
 
-  const updateSheet = useCallback(async (data: Request.UpdateSheetData): Promise<Response.Default> => {
+  const requestSheet = useCallback(async (data: Request.SheetData): Promise<Response.Default> => {
     const config: AxiosRequestConfig = {
       url: process.env.SHEET_URL,
       method: 'POST',
@@ -169,9 +171,8 @@ export const useAccountManagement = (): {
       };
       await resendConfirmEmail(resendConfirmEmailData);
 
-      // TODO -> Atualizar nas planilhas
       if (data.sheetRange && data.sheetId) {
-        const updateSheetData: Request.UpdateSheetData = {
+        const requestSheetData: Request.SheetData = {
           apiResource: "values",
           apiMethod: "update",
           range: data.sheetRange,
@@ -179,8 +180,7 @@ export const useAccountManagement = (): {
           spreadsheetId: data.sheetId,
           valueInputOption: "raw"
         };
-        console.log(updateSheetData);
-        await updateSheet(updateSheetData);
+        await requestSheet(requestSheetData);
       }
       await auth.signOut();
       return { ok: true, msg: 'Email atualizado com sucesso!' };
@@ -285,7 +285,7 @@ export const useAccountManagement = (): {
           case 'auth/wrong-password': throw { msg: 'Senha incorreta', customError: true }
           case 'auth/too-many-requests': throw { msg: 'Muitas tentativas. Tente mais tarde', customError: true }
         }
-      } else throw error
+      } else throw error;
     }
   }, []);
 
@@ -294,5 +294,58 @@ export const useAccountManagement = (): {
     await auth.signOut();
   }, []);
 
-  return { resendConfirmEmail, changeEmail, changePassword, deleteAccount, resetPassword, logIn, logOut };
+  const createUser = useCallback(async (data: Request.CreateUser) => {
+    try {
+      if (auth.currentUser) throw new Error("O usuário deve estar deslogado para acionar o hook");
+      if (!data.email) throw new Error("O email é necessário para acionar o hook");
+      if (!data.password) throw new Error("A senha é necessária para acionar o hook");
+      if (!data.collection || !collectionList.includes(data.collection)) throw new Error("O app é necessário para acionar o hook");
+      if (!data.collectionData) throw new Error("Os dados do usuário são necessários para acionar o hook");
+      if (!data.continueUrl) throw new Error("O parâmetro continueUrl é necessário para acionar o hook");
+      const { email, password, collection, collectionData,
+        spreadsheetData, spreadsheetId, spreadsheetRange, continueUrl } = data;
+      const lowerEmail = email.toLowerCase();
+      // auth
+      const { user: { uid } } = await auth.createUserWithEmailAndPassword(lowerEmail, password);
+      // users collection
+      await usersRef.add({ email: lowerEmail, app: collection });
+      // app collection
+      const collectionRef = matchRef(collection);
+      await collectionRef.doc(uid).set({ ...collectionData, email: lowerEmail, uid });
+
+      if (spreadsheetData && spreadsheetId && spreadsheetRange) {
+        const sheetData: Request.SheetData = {
+          apiResource: 'values',
+          apiMethod: 'append',
+          spreadsheetId,
+          range: spreadsheetRange,
+          resource: { values: [spreadsheetData] },
+          valueInputOption: 'user_entered'
+        };
+        await requestSheet(sheetData);
+      }
+      await auth.currentUser.sendEmailVerification({ url: continueUrl });
+      await auth.signOut();
+      return { ok: true, msg: 'Usuário cadastrado com sucesso!' };
+    } catch (error) {
+      console.log(error);
+      if (error.code) {
+        switch (error.code) {
+          case 'auth/email-already-exists': throw { msg: 'Email utilizado em outra conta', customError: true };
+          case 'auth/app-delete': throw { msg: 'Usuário já excluído', customError: true };
+          case 'auth/argument-error': throw { msg: 'Argumentos inválidos, tente novamente', customError: true };
+          case 'auth/invalid-user-token': throw { msg: 'Token inválido, faça login novamente', customError: true };
+          case 'auth/user-not-found': throw { msg: 'Usuário não encontrado', customError: true };
+          case 'auth/network-request-failed': throw { msg: 'Falha na conexão, tente novamente', customError: true };
+          case 'auth/too-many-requests': throw { msg: 'Muitas requisições, tente novamente mais tarde', customError: true };
+          case 'auth/user-disabled': throw { msg: 'Usuário desativado', customError: true };
+          case 'auth/invalid-email': throw { msg: 'Email mal formatado', customError: true };
+          case 'resource-exhausted': throw { msg: 'Indisponível no momento, tente novamente mais tarde', customError: true };
+          default: throw { msg: 'Erro no servidor, tente novamente em alguns minutos', customError: true };
+        }
+      } else throw error;
+    }
+  }, []);
+
+  return { resendConfirmEmail, changeEmail, changePassword, deleteAccount, resetPassword, logIn, logOut, createUser };
 };
