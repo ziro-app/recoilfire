@@ -108,7 +108,7 @@ export const useRollback = (): {
           const docRef = (await doc).docs[0]?.ref || null;
           if (docRef) return await docRef.delete();
         }
-      } return;
+      } else return;
     } catch (error) {
       console.log('Erro no firebaseRollback', error);
     }
