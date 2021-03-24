@@ -23,14 +23,18 @@ export const useAccountManagement = (): {
 } => {
   const auth = useAuth();
   const usersRef = useFirestore().collection("users");
+  const affiliatesRef = useFirestore().collection("affiliates");
   const collaboratorsRef = useFirestore().collection("collaborators");
   const storeownersRef = useFirestore().collection("storeowners");
   const teamRef = useFirestore().collection("team");
+  const suppliersRef = useFirestore().collection("suppliers");
 
   const matchRef = (collection) => {
+    if (collection === "affiliates") return affiliatesRef;
     if (collection === "collaborators") return collaboratorsRef;
     if (collection === "storeowners") return storeownersRef;
     if (collection === "team") return teamRef;
+    if (collection === "suppliers") return suppliersRef;
     return null;
   };
 
