@@ -1,6 +1,8 @@
 import React, { useCallback } from "react";
 import { useAuth, useFirestore, auth as fbAuth } from "reactfire";
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+// Switch to importing lib into production
+import { useRollback } from '../Rollback';
 import { Request, Response } from "./types";
 
 const matchCollectionName = {
@@ -21,6 +23,7 @@ export const useAccountManagement = (): {
   logOut: () => Promise<void>;
   createUser: (data: Request.CreateUser) => Promise<Response.Default>;
 } => {
+  const { addRollback, execute } = useRollback();
   const auth = useAuth();
   const usersRef = useFirestore().collection("users");
   const affiliatesRef = useFirestore().collection("affiliates");
@@ -35,6 +38,7 @@ export const useAccountManagement = (): {
     if (collection === "storeowners") return storeownersRef;
     if (collection === "team") return teamRef;
     if (collection === "suppliers") return suppliersRef;
+    if (collection === "users") return usersRef;
     return null;
   };
 
@@ -306,16 +310,20 @@ export const useAccountManagement = (): {
       if (!data.collection || !collectionList.includes(data.collection)) throw new Error("O app é necessário para acionar o hook");
       if (!data.collectionData) throw new Error("Os dados do usuário são necessários para acionar o hook");
       if (!data.continueUrl) throw new Error("O parâmetro continueUrl é necessário para acionar o hook");
-      const { email, password, collection, collectionData,
-        spreadsheetData, spreadsheetId, spreadsheetRange, continueUrl } = data;
+      const { app, email, password, collection, collectionData, idToSearch,
+        spreadsheetData, spreadsheetId, spreadsheetRange, continueUrl,
+        rangeToSearch, rangeToUpdate, values } = data;
       const lowerEmail = email.toLowerCase();
       // auth
       const { user: { uid } } = await auth.createUserWithEmailAndPassword(lowerEmail, password);
+      addRollback({ origin: 'Auth', password });
       // users collection
-      await usersRef.add({ email: lowerEmail, app: collection });
+      await usersRef.add({ email: lowerEmail, app });
+      addRollback({ origin: 'Firebase', collection: 'users', field: 'email', identifier: lowerEmail });
       // app collection
       const collectionRef = matchRef(collection);
       await collectionRef.doc(uid).set({ ...collectionData, email: lowerEmail, uid });
+      addRollback({ origin: 'Firebase', collection, field: 'uid', identifier: uid });
 
       if (spreadsheetData && spreadsheetId && spreadsheetRange) {
         const sheetData: Request.SheetData = {
@@ -327,11 +335,13 @@ export const useAccountManagement = (): {
           valueInputOption: 'user_entered'
         };
         await requestSheet(sheetData);
+        addRollback({ origin: 'Sheets', idToSearch: idToSearch || '', rangeToSearch: rangeToSearch || '', rangeToUpdate: rangeToUpdate || '', values: values || [], spreadsheetId: spreadsheetId || '' });
       }
       await auth.currentUser.sendEmailVerification({ url: continueUrl });
       await auth.signOut();
       return { ok: true, msg: 'Usuário cadastrado com sucesso!' };
     } catch (error) {
+      execute();
       console.log(error);
       if (error.code) {
         switch (error.code) {

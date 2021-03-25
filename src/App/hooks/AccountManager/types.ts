@@ -1,5 +1,6 @@
 export type Apps = "affiliate" | "catalog" | "operation" | "suppliers";
 export type ConfirmLinkTypes = "Email" | "CNPJ";
+export type Collections = "affiliates" | "collaborators" | "storeowners" | "team" | "suppliers" | "users";
 
 export namespace Request {
   export interface ConfirmLink {
@@ -50,12 +51,18 @@ export namespace Request {
   export interface CreateUser {
     email: string;
     password: string;
-    collection: Apps;
+    app: Apps;
+    collection: Collections;
     collectionData: object;
     continueUrl: string;
     spreadsheetData?: Array<string>;
     spreadsheetId?: string;
     spreadsheetRange?: string;
+    // Rollback-related fields if the action fails
+    idToSearch?: string;
+    rangeToSearch?: string;
+    rangeToUpdate?: string;
+    values?: Array<string>;
   }
 }
 
