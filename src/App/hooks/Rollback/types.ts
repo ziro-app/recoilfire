@@ -1,6 +1,6 @@
 export type RollbackTypes = "Firebase" | "Sheets" | "Zoop" | "Auth";
 export type Collections = "affiliates" | "collaborators" | "storeowners" | "team" | "suppliers" | "users";
-export type ZoopResources = "sellers" | "buyer" | "card" | "payments" | "split_rules";
+export type ZoopResources = "sellers" | "buyer" | "card" | "payments" | "split_rules" | "bank_account";
 
 interface CommonProps {
   origin: RollbackTypes;

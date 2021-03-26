@@ -154,6 +154,7 @@ export const useRollback = (): {
       let url = '';
       if (resource === 'sellers') url = `${process.env.PAY_URL}sellers-delete?seller_id=${resourceId}`;
       else if (resource === 'payments') url = `${process.env.PAY_URL}transactions/${resourceId}/void`;
+      else if (resource === 'bank_account') url = `${process.env.PAY_URL}bank-delete?bank_account_id=${resourceId}`;
       else if (resource === 'split_rules' && splitTransactionId) url = `${process.env.PAY_URL}transactions/${splitTransactionId}/split_rules/${resourceId}`;
       else url = `${process.env.PAY_URL}${resource}-delete?${resource}_id=${resourceId}`;
       const config = {
