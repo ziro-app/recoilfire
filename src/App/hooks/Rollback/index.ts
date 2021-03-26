@@ -149,9 +149,13 @@ export const useRollback = (): {
 
   const zoopRollback = useCallback(async (zoopData: IZoopData) => {
     try {
-      if (!zoopData.zoopId) return;
-      const { zoopId } = zoopData;
-      const url = `${process.env.PAY_URL}sellers-delete?seller_id=${zoopId}`;
+      if (!zoopData.resource) return;
+      const { resource, resourceId, splitTransactionId } = zoopData;
+      let url = '';
+      if (resource === 'sellers') url = `${process.env.PAY_URL}sellers-delete?seller_id=${resourceId}`;
+      else if (resource === 'payments') url = `${process.env.PAY_URL}transactions/${resourceId}/void`;
+      else if (resource === 'split_rules' && splitTransactionId) url = `${process.env.PAY_URL}transactions/${splitTransactionId}/split_rules/${resourceId}`;
+      else url = `${process.env.PAY_URL}${resource}-delete?${resource}_id=${resourceId}`;
       const config = {
         headers: {
           'Content-type': 'application/json',

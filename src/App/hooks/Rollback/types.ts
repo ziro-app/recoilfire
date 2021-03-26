@@ -1,5 +1,6 @@
 export type RollbackTypes = "Firebase" | "Sheets" | "Zoop" | "Auth";
 export type Collections = "affiliates" | "collaborators" | "storeowners" | "team" | "suppliers" | "users";
+export type ZoopResources = "sellers" | "buyer" | "card" | "payments" | "split_rules";
 
 interface CommonProps {
   origin: RollbackTypes;
@@ -12,7 +13,9 @@ export interface IFirebaseData extends CommonProps {
 }
 
 export interface IZoopData extends CommonProps {
-  zoopId: string;
+  resource: ZoopResources;
+  resourceId: string;
+  splitTransactionId?: string;
 }
 
 export interface ISheetsData extends CommonProps {

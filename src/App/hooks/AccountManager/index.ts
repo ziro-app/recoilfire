@@ -25,6 +25,7 @@ export const useAccountManagement = (): {
 } => {
   const { addRollback, execute } = useRollback();
   const auth = useAuth();
+  const emailAuth = fbAuth.EmailAuthProvider;
   const usersRef = useFirestore().collection("users");
   const affiliatesRef = useFirestore().collection("affiliates");
   const collaboratorsRef = useFirestore().collection("collaborators");
@@ -144,7 +145,7 @@ export const useAccountManagement = (): {
       const oldOmail = auth.currentUser.email;
       const newEmail = data.newEmail.toLowerCase();
       try {
-        const credential = fbAuth.EmailAuthProvider.credential(oldOmail, data.password);
+        const credential = emailAuth.credential(oldOmail, data.password);
         await auth.currentUser.reauthenticateWithCredential(credential);
       } catch (error) {
         throw new Error("Erro de autenticação! Verifique a senha e tente novamente");
@@ -204,10 +205,7 @@ export const useAccountManagement = (): {
       if (!data.oldPassword) throw new Error("A senha atual é necessária para validação!");
       if (!data.newPassword) throw new Error("O envio da nova senha é obrigatório!");
       try {
-        const credential = fbAuth.EmailAuthProvider.credential(
-          auth.currentUser.email,
-          data.oldPassword
-        );
+        const credential = emailAuth.credential(auth.currentUser.email, data.oldPassword);
         await auth.currentUser.reauthenticateWithCredential(credential);
       } catch (error) {
         throw new Error("Erro de autenticação! Verifique a senha e tente novamente");
@@ -226,7 +224,7 @@ export const useAccountManagement = (): {
       if (!data.password) throw new Error("A senha atual é necessária para validação!");
       const email = auth.currentUser.email;
       try {
-        const credential = fbAuth.EmailAuthProvider.credential(email, data.password);
+        const credential = emailAuth.credential(email, data.password);
         await auth.currentUser.reauthenticateWithCredential(credential);
       } catch (error) {
         throw new Error("Erro de autenticação! Verifique a senha e tente novamente");
