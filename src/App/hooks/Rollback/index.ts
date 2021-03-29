@@ -147,9 +147,9 @@ export const useRollback = (): {
     }
   }, []);
 
-  const zoopRollback = useCallback(async (zoopData: IZoopData) => {
+  const zoopRollback = useCallback(async (zoopData: IZoopData, reqNumber: number) => {
     try {
-      if (!zoopData.resource) return;
+      if (!zoopData.resource || reqNumber > 4) return;
       const { resource, resourceId, splitTransactionId } = zoopData;
       let url = '';
       if (resource === 'sellers') url = `${process.env.PAY_URL}sellers-delete?seller_id=${resourceId}`;
@@ -165,7 +165,9 @@ export const useRollback = (): {
       };
       return await axios.post(url, {}, config);
     } catch (error) {
-      console.log('Erro no zoopRollback', error);
+      console.log(`Erro na requisição nº ${reqNumber} no zoopRollback`, error);
+      if ((reqNumber + 1) <= 4) return zoopRollback(zoopData, reqNumber + 1);
+      else return;
     }
   }, []);
 
@@ -178,7 +180,7 @@ export const useRollback = (): {
         if (origin === 'Auth') return await authRollback(data as unknown as IUserData);
         else if (origin === 'Firebase') return await firebaseRollback(data as unknown as IFirebaseData);
         else if (origin === 'Sheets') return await sheetsRollback(data as unknown as ISheetsData);
-        else if (origin === 'Zoop') return await zoopRollback(data as unknown as IZoopData);
+        else if (origin === 'Zoop') return await zoopRollback(data as unknown as IZoopData, 1);
         else return;
       }));
     }
